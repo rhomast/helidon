@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023 Oracle and/or its affiliates.
+ * Copyright (c) 2023, 2026 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,6 @@ import java.util.Optional;
 
 import io.helidon.builder.api.Option;
 import io.helidon.builder.api.Prototype;
-import io.helidon.common.config.Config;
 import io.helidon.cors.CrossOriginConfig;
 import io.helidon.webserver.observe.spi.ObserveProvider;
 import io.helidon.webserver.observe.spi.Observer;
@@ -39,7 +38,12 @@ interface ObserveFeatureConfigBlueprint extends Prototype.Factory<ObserveFeature
      * Cors support inherited by each observe provider, unless explicitly configured.
      *
      * @return cors support to use
+     * @deprecated feature specific CORS configuration is deprecated and will be removed; use either config based CORS setup
+     *  (configuration key {@code cors}, or programmatic setup using the {@code io.helidon.webserver.cors.CorsFeature}
+     *  server feature
      */
+    @SuppressWarnings("removal")
+    @Deprecated(forRemoval = true, since = "4.4.0")
     @Option.Configured
     @Option.DefaultCode("@io.helidon.cors.CrossOriginConfig@.create()")
     CrossOriginConfig cors();
@@ -93,7 +97,7 @@ interface ObserveFeatureConfigBlueprint extends Prototype.Factory<ObserveFeature
      *
      * @return config node of the feature
      */
-    Optional<Config> config();
+    Optional<io.helidon.common.config.Config> config();
 
     /**
      * Sockets the observability endpoint should be exposed on. If not defined, defaults to the default socket

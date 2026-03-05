@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2018, 2025 Oracle and/or its affiliates.
+ * Copyright (c) 2018, 2026 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,9 +28,9 @@ import java.util.function.Supplier;
 
 import io.helidon.common.Errors;
 import io.helidon.common.LazyValue;
-import io.helidon.common.config.Config;
 import io.helidon.common.configurable.Resource;
 import io.helidon.common.socket.SocketOptions;
+import io.helidon.config.Config;
 import io.helidon.config.metadata.Configured;
 import io.helidon.config.metadata.ConfiguredOption;
 import io.helidon.cors.CrossOriginConfig;
@@ -467,6 +467,21 @@ public final class OidcConfig extends TenantConfigImpl {
      */
     public static Builder builder() {
         return new Builder();
+    }
+
+    /**
+     * Create a new instance from {@link io.helidon.common.config.Config}.
+     *
+     * @param config configuration used to obtain OIDC integration values
+     * @return a new instance of this class configured from provided config
+     * @deprecated use {@link #create(io.helidon.config.Config)} instead
+     */
+    @SuppressWarnings("removal")
+    @Deprecated(since = "4.4.0", forRemoval = true)
+    public static OidcConfig create(io.helidon.common.config.Config config) {
+        return OidcConfig.builder()
+                .config(config)
+                .build();
     }
 
     /**
@@ -1223,7 +1238,12 @@ public final class OidcConfig extends TenantConfigImpl {
          *
          * @param crossOriginConfig cross-origin settings to apply to the redirect endpoint
          * @return updated builder instance
+         * @deprecated feature specific CORS configuration is deprecated and will be removed; use either config based CORS setup
+         *  (configuration key {@code cors}, or programmatic setup using the {@code io.helidon.webserver.cors.CorsFeature}
+         *  server feature
          */
+        @SuppressWarnings("removal")
+        @Deprecated(forRemoval = true, since = "4.4.0")
         @ConfiguredOption(key = "cors")
         public Builder crossOriginConfig(CrossOriginConfig crossOriginConfig) {
             this.crossOriginConfig = crossOriginConfig;

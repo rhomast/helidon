@@ -39,7 +39,7 @@ ifeval::["{helidon-version-is-release}" == "true"]
 endif::[]
 
 // versions
-:version-plugin-helidon: 3.0.5
+:version-plugin-helidon: 4.0.25
 
 :version-lib-microprofile-api: 6.1
 
@@ -83,7 +83,7 @@ endif::[]
 :version-lib-hibernate: 6.1
 :version-lib-oracle-jdbc: 21
 :version-lib-oracle-ucp: {version-lib-oracle-jdbc}
-:version-lib-opentelemetry: 1.29.0
+:version-lib-opentelemetry: 1.58.0
 :version-plugin-jib: 0.10.1
 :version-plugin-jandex: 3.1.2
 :version-lib-micrometer: 1.11.1
@@ -94,7 +94,7 @@ endif::[]
 :jdk-doc-url: https://docs.oracle.com/en/java/javase/21
 :jdk-javadoc-url: {jdk-doc-url}/docs/api
 
-:helidon-maven-plugin-doc-url: https://github.com/oracle/helidon-build-tools/blob/{version-plugin-helidon}/maven-plugins/helidon-maven-plugin/README.md
+:helidon-maven-plugin-doc-url: https://github.com/helidon-io/helidon-build-tools/blob/{version-plugin-helidon}/maven-plugins/helidon-maven-plugin/README.md
 
 // MicroProfile versioned URLs
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, 2025 Oracle and/or its affiliates.
+ * Copyright (c) 2023, 2026 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -83,7 +83,7 @@ interface AnnotationBlueprint {
     Map<String, Object> values();
 
     /**
-     * List of properties defined on this annotation.
+     * Properties defined on this annotation.
      *
      * @return properties
      */
@@ -157,7 +157,7 @@ interface AnnotationBlueprint {
      * @return object value
      */
     default Optional<Object> objectValue(String property) {
-        return Optional.ofNullable(values().get(property));
+        return Optional.ofNullable(properties().get(property).value());
     }
 
     /**
@@ -522,6 +522,9 @@ interface AnnotationBlueprint {
 
     /**
      * Typed value of the property "{@code value}".
+     * <p>
+     * NOTE: {classValue} is only available when the target class is on the classpath; do not use this method when within
+     * an annotation processor/codegen, as there is a very good chance the type will not be available.
      *
      * @return value if present
      */
@@ -531,7 +534,10 @@ interface AnnotationBlueprint {
 
     /**
      * Typed value of a named property.
-     *
+     * <p>
+     * NOTE: {classValue} is only available when the target class is on the classpath; do not use this method when within
+     * an annotation processor/codegen, as there is a very good chance the type will not be available.
+
      * @param property name of the annotation property
      * @return value if present
      */
@@ -542,6 +548,9 @@ interface AnnotationBlueprint {
     /**
      * Typed value of the property "{@code value}" that is defined as an array.
      * This will also work for a single values property.
+     * <p>
+     * NOTE: {classValues} is only available when the target class is on the classpath; do not use this method when within
+     * an annotation processor/codegen, as there is a very good chance the type will not be available.
      *
      * @return list of defined values if present
      */
@@ -552,6 +561,9 @@ interface AnnotationBlueprint {
     /**
      * Typed values of a property that is defined as an array.
      * This will also work for a single values property.
+     * <p>
+     * NOTE: {classValues} is only available when the target class is on the classpath; do not use this method when within
+     * an annotation processor/codegen, as there is a very good chance the type will not be available.
      *
      * @param property name of the annotation property
      * @return list of defined values if present

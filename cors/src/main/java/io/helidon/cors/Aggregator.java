@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, 2025 Oracle and/or its affiliates.
+ * Copyright (c) 2020, 2026 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,10 +21,10 @@ import java.util.Optional;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
 
-import io.helidon.common.config.Config;
-import io.helidon.common.config.ConfigValue;
 import io.helidon.common.uri.UriEncoding;
 import io.helidon.common.uri.UriPath;
+import io.helidon.config.Config;
+import io.helidon.config.ConfigValue;
 import io.helidon.cors.LogHelper.MatcherChecks;
 import io.helidon.http.PathMatcher;
 import io.helidon.http.PathMatchers;
@@ -45,7 +45,12 @@ import io.helidon.http.PathMatchers;
  *     with any other entry) determining the order, relative to other entries, with which it will be checked.
  * </p>
  *
+ * @deprecated this module will be removed, CORS configuration is centralized to module {@code helidon-webserver-cors} with
+ *         {@code io.helidon.webserver.cors.CorsFeature} either from {@link io.helidon.service.registry.ServiceRegistry}, or
+ *         through one of the feature's static factory or builder methods; paths configured in config are registered first,
+ *         before paths configured through service registry; this class will be removed in a future version of Helidon
  */
+@Deprecated(forRemoval = true, since = "4.4.0")
 public class Aggregator {
 
     /**
@@ -124,13 +129,13 @@ public class Aggregator {
                 // (allow-origins, etc.)
                 Config pathsNode = config.get(CrossOriginConfig.CORS_PATHS_CONFIG_KEY);
                 if (pathsNode.exists()) {
-                    ConfigValue<MappedCrossOriginConfig.Builder> configValue = config.map(MappedCrossOriginConfig::builder);
+                    ConfigValue<MappedCrossOriginConfig.Builder> configValue = config.as(MappedCrossOriginConfig::builder);
                     if (configValue.isPresent()) {
                         MappedCrossOriginConfig mappedCrossOriginConfig = configValue.get().build();
                         mappedCrossOriginConfig.forEach(this::addCrossOrigin);
                     }
                 } else {
-                    ConfigValue<CrossOriginConfig.Builder> configValue = config.map(CrossOriginConfig::builder);
+                    ConfigValue<CrossOriginConfig.Builder> configValue = config.as(CrossOriginConfig::builder);
                     if (configValue.isPresent()) {
                         CrossOriginConfig crossOriginConfig = configValue.get().build();
                         addPathlessCrossOrigin(crossOriginConfig);
@@ -147,9 +152,8 @@ public class Aggregator {
          * @return updated builder
          */
         Builder mappedConfig(Config config) {
-
             if (config.exists()) {
-                ConfigValue<MappedCrossOriginConfig.Builder> mappedConfigValue = config.map(MappedCrossOriginConfig::builder);
+                ConfigValue<MappedCrossOriginConfig.Builder> mappedConfigValue = config.as(MappedCrossOriginConfig::builder);
                 if (mappedConfigValue.isPresent()) {
                     MappedCrossOriginConfig mapped = mappedConfigValue.get().build();
                     /*

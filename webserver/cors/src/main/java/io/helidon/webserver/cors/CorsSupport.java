@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2020, 2023 Oracle and/or its affiliates.
+ * Copyright (c) 2020, 2026 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -17,7 +17,7 @@ package io.helidon.webserver.cors;
 
 import java.util.Optional;
 
-import io.helidon.common.config.Config;
+import io.helidon.config.Config;
 import io.helidon.cors.CorsRequestAdapter;
 import io.helidon.cors.CorsResponseAdapter;
 import io.helidon.cors.CorsSupportBase;
@@ -30,7 +30,13 @@ import io.helidon.webserver.http.ServerResponse;
 
 /**
  * SE implementation of {@link CorsSupportBase}.
+ *
+ * @deprecated CORS configuration is centralized to module {@code helidon-webserver-cors} with
+ *         {@code io.helidon.webserver.cors.CorsFeature} either from {@link io.helidon.service.registry.ServiceRegistry}, or
+ *         through one of the feature's static factory or builder methods; paths configured in config are registered first,
+ *         before paths configured through service registry; this class will be removed in a future version of Helidon
  */
+@Deprecated(forRemoval = true, since = "4.4.0")
 public class CorsSupport extends CorsSupportBase<ServerRequest, ServerResponse, CorsSupport, CorsSupport.Builder>
         implements HttpService, Handler {
 
@@ -62,9 +68,37 @@ public class CorsSupport extends CorsSupportBase<ServerRequest, ServerResponse, 
      *
      * @param config node containing the cross-origin information
      * @return initialized {@code CorsSupport} instance
+     * @deprecated use {@link #create(io.helidon.config.Config)} instead
+     */
+    @SuppressWarnings("removal")
+    @Deprecated(since = "4.4.0", forRemoval = true)
+    public static CorsSupport create(io.helidon.common.config.Config config) {
+        return builder().config(config).build();
+    }
+
+    /**
+     * Creates a new {@code CorsSupport} instance based on the provided configuration expected to match the basic
+     * {@code CrossOriginConfig} format.
+     *
+     * @param config node containing the cross-origin information
+     * @return initialized {@code CorsSupport} instance
      */
     public static CorsSupport create(Config config) {
         return builder().config(config).build();
+    }
+
+    /**
+     * Creates a new {@code CorsSupport} instance based on the provided configuration expected to contain mapped cross-origin
+     * config information.
+     *
+     * @param config node containing the mapped cross-origin information
+     * @return initialized {@code CorsSupport} instance
+     * @deprecated use {@link #createMapped(io.helidon.config.Config)} instead
+     */
+    @SuppressWarnings("removal")
+    @Deprecated(since = "4.4.0", forRemoval = true)
+    public static CorsSupport createMapped(io.helidon.common.config.Config config) {
+        return builder().mappedConfig(config).build();
     }
 
     /**

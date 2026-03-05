@@ -807,6 +807,11 @@
                 <artifactId>helidon-webserver-observe-telemetry-tracing</artifactId>
                 <version>${helidon.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.helidon.webserver.observe</groupId>
+                <artifactId>helidon-webserver-observe-telemetry-metrics</artifactId>
+                <version>${helidon.version}</version>
+            </dependency>
 
             <!-- tracing -->
             <dependency>
@@ -1243,6 +1248,11 @@
                 <artifactId>helidon-integrations-langchain4j-providers-google-gemini</artifactId>
                 <version>${helidon.version}</version>
             </dependency>
+            <dependency>
+                <groupId>io.helidon.integrations.langchain4j.providers</groupId>
+                <artifactId>helidon-integrations-langchain4j-providers-lc4j-in-process</artifactId>
+                <version>${helidon.version}</version>
+            </dependency>
 
             <!-- OpenAPI support -->
             <dependency>
@@ -1436,6 +1446,11 @@
             <dependency>
                 <groupId>io.helidon.http.media</groupId>
                 <artifactId>helidon-http-media</artifactId>
+                <version>${helidon.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>io.helidon.http.media</groupId>
+                <artifactId>helidon-http-media-json</artifactId>
                 <version>${helidon.version}</version>
             </dependency>
             <dependency>
@@ -1713,6 +1728,13 @@
             <dependency>
                 <groupId>io.helidon.builder</groupId>
                 <artifactId>helidon-builder-codegen</artifactId>
+                <version>${helidon.version}</version>
+            </dependency>
+
+            <!-- APT Bundle -->
+            <dependency>
+                <groupId>io.helidon.bundles</groupId>
+                <artifactId>helidon-bundles-apt</artifactId>
                 <version>${helidon.version}</version>
             </dependency>
 

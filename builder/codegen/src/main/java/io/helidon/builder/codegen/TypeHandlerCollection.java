@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2023, 2025 Oracle and/or its affiliates.
+ * Copyright (c) 2023, 2026 Oracle and/or its affiliates.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -150,10 +150,13 @@ abstract class TypeHandlerCollection extends TypeHandlerContainer {
                 method.addContent(configGet(optionConfigured))
                         .addContent(".asList(")
                         .update(it -> generateMapListFromConfig(it, fm))
-                        .addContentLine(").ifPresent(this::" + setterName + ");");
+                        .addContent(")");
+                configMapper.ifPresent(it -> it.accept(method));
+                method.addContentLine(".ifPresent(this::" + setterName + ");");
             } else {
                 method.addContent(configGet(optionConfigured));
                 generateFromConfig(method, fm);
+                configMapper.ifPresent(it -> it.accept(method));
                 method.addContentLine(".ifPresent(this::" + setterName + ");");
             }
         } else if (BUILT_IN_MAPPERS.contains(actualType)) {
@@ -188,7 +191,7 @@ abstract class TypeHandlerCollection extends TypeHandlerContainer {
             generateFromConfig(method);
             method.addContent(".get()).");
             collector.accept(method);
-            method.addContent(").ifPresent(this::" + setterName + ");");
+            method.addContentLine(").ifPresent(this::" + setterName + ");");
         }
     }
 
@@ -234,8 +237,10 @@ abstract class TypeHandlerCollection extends TypeHandlerContainer {
                             .addContent("().")
                             .addContent(decoratorSetMethodName())
                             .addContent("(this, ")
+                            .addContent(collectionType)
+                            .addContent(".copyOf(")
                             .addContent(name)
-                            .addContentLine(");"));
+                            .addContentLine("));"));
 
             extraSetterContent(it);
             it.addContentLine("this." + name + ".clear();")
@@ -280,8 +285,10 @@ abstract class TypeHandlerCollection extends TypeHandlerContainer {
                             .addContent("().")
                             .addContent(decoratorAddMethodName())
                             .addContent("(this, ")
+                            .addContent(collectionType)
+                            .addContent(".copyOf(")
                             .addContent(name)
-                            .addContentLine(");"));
+                            .addContentLine("));"));
 
             it.addContentLine("this." + name + ".addAll(" + name + ");")
                     .addContentLine("return self();");
@@ -348,16 +355,43 @@ abstract class TypeHandlerCollection extends TypeHandlerContainer {
 
     @Override
     Optional<GeneratedMethod> prepareBuilderSingularAddConsumer(Javadoc getterJavadoc) {
-        if (option().singular().isEmpty() || option().builderInfo().isEmpty()) {
+        if (option().singular().isEmpty()) {
+            // not a singular option, this setter is not desired
             return Optional.empty();
         }
+
+        if (option().prototypedBy().isEmpty()
+                && option().builderInfo().isEmpty()
+                && option().runtimeType().map(RuntimeTypeInfo::optionBuilder).isEmpty()) {
+            // this option is not backed by a prototype with builder, this method cannot be done
+            return Optional.empty();
+        }
+
+        if (option().prototypedBy().isPresent()) {
+            // explicit prototypedBy, use that annotation value
+            return prepareSetterConsumerPrototypedBy(getterJavadoc, option().singular().get(), option().prototypedBy().get());
+        }
+
         TypeName returnType = Utils.builderReturnType();
 
         OptionSingular optionSingular = option().singular().get();
         String methodName = optionSingular.methodName();
 
         // if there is a factory method for the return type, we also have setters for the type (probably config object)
-        OptionBuilder optionBuilder = option().builderInfo().get();
+        OptionBuilder optionBuilder;
+        if (option().builderInfo().isPresent()) {
+            optionBuilder = option().builderInfo().get();
+        } else {
+            var runtimeType = option().runtimeType().get();
+            if (runtimeType.factoryMethod().isPresent()) {
+                // we do not have a builder that builds the runtime type, though we could still create the
+                // setter with consumer, ignoring as we now support the `prototypedBy` approach
+                return Optional.empty();
+            }
+            optionBuilder = option().runtimeType().get()
+                    .optionBuilder();
+        }
+
         TypeName builderType = optionBuilder.builderType();
         String builderMethod = optionBuilder.builderMethodName();
         String buildMethod = optionBuilder.buildMethodName();
@@ -535,6 +569,65 @@ abstract class TypeHandlerCollection extends TypeHandlerContainer {
         content.addContent("new ")
                 .addContent(collectionImplType.genericTypeName())
                 .addContent("<>");
+    }
+
+    private Optional<GeneratedMethod> prepareSetterConsumerPrototypedBy(Javadoc getterJavadoc,
+                                                                        OptionSingular optionSingular,
+                                                                        TypeName prototypeType) {
+
+        TypeName returnType = Utils.builderReturnType();
+        String methodName = optionSingular.methodName();
+
+        TypeName prototype = fixPackage(prototypeType);
+
+        TypeName builderType = TypeName.builder()
+                .className("Builder")
+                .addEnclosingName(prototype.className())
+                .packageName(prototype.packageName())
+                .build();
+
+        TypeName paramType = TypeName.builder()
+                .type(Consumer.class)
+                .addTypeArgument(builderType)
+                .build();
+
+        String paramName = "consumer";
+        Javadoc setterJavadoc = setterJavadoc(getterJavadoc, paramName, "consumer of builder for ");
+
+        var method = TypedElementInfo.builder()
+                .kind(ElementKind.METHOD)
+                .accessModifier(option().accessModifier())
+                .typeName(returnType)
+                .elementName(methodName)
+                .update(this::deprecation)
+                .update(it -> option().annotations().forEach(it::addAnnotation));
+
+        method.addParameterArgument(param -> param
+                .kind(ElementKind.PARAMETER)
+                .typeName(paramType)
+                .elementName(paramName)
+        );
+
+        Consumer<ContentBuilder<?>> contentConsumer = it -> {
+            it.addContent(Objects.class)
+                    .addContentLine(".requireNonNull(" + paramName + ");");
+
+            it.addContent("var builder = ")
+                    .addContent(prototype)
+                    .addContentLine(".builder();");
+
+
+            // decorator and add will be called as part of singular setter
+            it.addContentLine("consumer.accept(builder);")
+                    .addContentLine("this." + methodName + "(builder.build());")
+                    .addContentLine("return self();");
+        };
+
+        return Optional.ofNullable(GeneratedMethod.builder()
+                                           .method(method.build())
+                                           .javadoc(setterJavadoc)
+                                           .contentBuilder(contentConsumer)
+                                           .build());
     }
 
 }
