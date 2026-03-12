@@ -48,6 +48,11 @@
             <artifactId>helidon-config</artifactId>
         </dependency>
         <dependency>
+            <groupId>io.helidon.config</groupId>
+            <artifactId>helidon-config-metadata</artifactId>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
             <groupId>io.helidon.common</groupId>
             <artifactId>helidon-common-types</artifactId>
         </dependency>
@@ -190,6 +195,11 @@
                     <dependency>
                         <groupId>io.helidon.common.features</groupId>
                         <artifactId>helidon-common-features-codegen</artifactId>
+                        <version>${helidon.version}</version>
+                    </dependency>
+                    <dependency>
+                        <groupId>io.helidon.integrations.langchain4j</groupId>
+                        <artifactId>helidon-integrations-langchain4j-codegen</artifactId>
                         <version>${helidon.version}</version>
                     </dependency>
                 </dependencies>
